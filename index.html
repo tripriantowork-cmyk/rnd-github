@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R&D Management System</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        darkBg: '#111827',
+                        darkCard: '#1f2937'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-darkBg dark:text-gray-200 transition-colors duration-300">
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl w-full max-w-md fade-in">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <h2 class="text-2xl font-bold">R&D System</h2>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Silakan login ke akun Anda</p>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Username</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="username" class="w-full pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 outline-none" required>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-1">Password</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+                        <input type="password" id="password" class="w-full pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 outline-none" required>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">Login</button>
+            </form>
+        </div>
+    </div>
+    <!-- MAIN APP SCREEN -->
+    <div id="mainApp" class="hidden h-screen flex overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-white dark:bg-darkCard shadow-lg flex flex-col transition-transform duration-300 absolute md:relative z-20 h-full -translate-x-full md:translate-x-0">
+            <div class="p-5 border-b dark:border-gray-700 flex justify-between items-center">
+                <div class="flex items-center gap-3 font-bold text-lg text-blue-600 dark:text-blue-400">
+                    <i class="fas fa-flask"></i> R&D Hub
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-500"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul class="space-y-1 px-3">
+                    <div id="adminDashboardMenu">
+                        <li><a href="#" onclick="navigate('Dashboard')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" data-menu="Dashboard"><i class="fas fa-home w-5"></i> Dashboard</a></li>
+                    </div>
+                    
+                    <div id="adminMenuSection">
+                        <li class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4">Master Data</li>
+                        <li><a href="#" onclick="navigate('Projects')" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" data-menu="Projects"><i class="fas fa-project-diagram w-5"></i> Projects</a></li>
+                        <li><a href="#" onclick="navigate('Spareparts')" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" data-menu="Spareparts"><i class="fas fa-cogs w-5"></i> Spareparts</a></li>
+                        <li><a href="#" onclick="navigate('Tools')" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" data-menu="Tools"><i class="fas fa-tools w-5"></i> Tools</a></li>
+                    </div>
+                    
+                    <li class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4">Operasional</li>
+                    <li><a href="#" onclick="navigate('Borrowing')" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" data-menu="Borrowing"><i class="fas fa-hand-holding-box w-5"></i> Peminjaman</a></li>
+                    
+                    <div id="adminProductsMenu">
+                        <li><a href="#" onclick="navigate('Products')" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" data-menu="Products"><i class="fas fa-box w-5"></i> Riwayat Produk</a></li>
+                    </div>
+                    
+                    <div id="adminMenuSystem" class="hidden">
+                        <li class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4">Sistem (Admin)</li>
+                        <li><a href="#" onclick="navigate('Users')" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" data-menu="Users"><i class="fas fa-users w-5"></i> Manajemen User</a></li>
+                        <li><a href="#" onclick="navigate('Activity Log')" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" data-menu="Activity Log"><i class="fas fa-history w-5"></i> Activity Log</a></li>
+                        <li><a href="#" onclick="runSetup()" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-purple-600"><i class="fas fa-database w-5"></i> Setup DB</a></li>
+                    </div>
+                </ul>
+            </nav>
+            
+            <div class="p-4 border-t dark:border-gray-700">
+                <div class="flex items-center gap-3 mb-4 px-2">
+                    <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold" id="userAvatar">A</div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-bold truncate" id="userNameDisplay">Admin</p>
+                        <p class="text-xs text-gray-500 truncate" id="userRoleDisplay">Administrator</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-10 hidden md:hidden" onclick="toggleSidebar()"></div>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col h-screen overflow-hidden">
+            <header class="bg-white dark:bg-darkCard shadow-sm py-4 px-6 flex justify-between items-center z-10">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="md:hidden text-gray-600 dark:text-gray-300 text-xl"><i class="fas fa-bars"></i></button>
+                    <h1 id="pageTitle" class="text-xl font-bold">Peminjaman</h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleDarkMode()" class="text-gray-500 hover:text-blue-500 transition w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        <i id="themeIcon" class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </header>
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 relative" id="contentArea">
+                <div id="loader" class="absolute inset-0 bg-white/80 dark:bg-darkBg/80 z-50 flex flex-col items-center justify-center hidden">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-2"></div>
+                    <p class="text-sm font-medium">Memproses data...</p>
+                </div>
+                <div id="view-Dashboard" class="view-section fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white dark:bg-darkCard rounded-xl p-6 shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
+                            <div><p class="text-sm text-gray-500 mb-1">Total Project</p><h3 class="text-3xl font-bold" id="stat-projects">0</h3></div>
+                            <div class="w-12 h-12 bg-blue-100 text-blue-500 rounded-full flex justify-center items-center text-xl"><i class="fas fa-project-diagram"></i></div>
+                        </div>
+                        <div class="bg-white dark:bg-darkCard rounded-xl p-6 shadow-sm border-l-4 border-orange-500 flex justify-between items-center">
+                            <div><p class="text-sm text-gray-500 mb-1">Tool Dipinjam</p><h3 class="text-3xl font-bold" id="stat-borrowed">0</h3></div>
+                            <div class="w-12 h-12 bg-orange-100 text-orange-500 rounded-full flex justify-center items-center text-xl"><i class="fas fa-tools"></i></div>
+                        </div>
+                        <div class="bg-white dark:bg-darkCard rounded-xl p-6 shadow-sm border-l-4 border-green-500 flex justify-between items-center">
+                            <div><p class="text-sm text-gray-500 mb-1">Total Produk R&D</p><h3 class="text-3xl font-bold" id="stat-products">0</h3></div>
+                            <div class="w-12 h-12 bg-green-100 text-green-500 rounded-full flex justify-center items-center text-xl"><i class="fas fa-box"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="view-CRUD" class="view-section hidden fade-in h-full flex flex-col">
+                    <div class="bg-white dark:bg-darkCard rounded-xl shadow-sm p-4 flex-1 flex flex-col">
+                        <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
+                            <div class="relative w-full md:w-64">
+                                <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                                <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari data..." class="w-full pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 outline-none text-sm">
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="exportTableToCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                                    <i class="fas fa-file-csv"></i> Export
+                                </button>
+                                <button id="btnAddData" onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                                    <i class="fas fa-plus"></i> Tambah Data
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-x-auto">
+                            <table class="w-full text-left border-collapse" id="dataTable">
+                                <thead><tr class="bg-gray-100 dark:bg-gray-800 text-sm uppercase tracking-wide text-gray-600 dark:text-gray-400 border-b dark:border-gray-700" id="tableHead"></tr></thead>
+                                <tbody class="text-sm divide-y dark:divide-gray-700" id="tableBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4 flex justify-between items-center text-sm text-gray-500">
+                            <span id="tableInfo">Menampilkan 0 data</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Modal Form CRUD -->
+    <div id="crudModal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkCard rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col fade-in">
+            <div class="p-5 border-b dark:border-gray-700 flex justify-between items-center">
+                <h3 class="text-lg font-bold" id="modalTitle">Tambah Data</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1">
+                <form id="crudForm" onsubmit="saveData(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Dynamic Fields -->
+                </form>
+            </div>
+            <div class="p-5 border-t dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">Batal</button>
+                <button type="submit" form="crudForm" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">Simpan</button>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Kamera (Untuk Peminjaman) -->
+    <div id="cameraModal" class="fixed inset-0 bg-black/80 z-[110] hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkCard p-4 rounded-xl shadow-xl flex flex-col items-center fade-in">
+            <h3 class="font-bold mb-4">Ambil Foto</h3>
+            <video id="cameraVideo" class="w-full max-w-sm rounded-lg bg-black mb-4" autoplay playsinline></video>
+            <canvas id="cameraCanvas" class="hidden"></canvas>
+            <div class="flex gap-4 w-full">
+                <button onclick="closeCamera()" class="flex-1 py-2 bg-gray-500 text-white rounded-lg">Batal</button>
+                <button onclick="capturePhoto()" class="flex-1 py-2 bg-blue-600 text-white rounded-lg"><i class="fas fa-camera"></i> Jepret</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // ==========================================
+        // 1. SETUP KONEKSI GOOGLE APPS SCRIPT
+        // ==========================================
+        
+        // PENTING: Ganti  di bawah dengan URL Deployment Web App GAS Anda!
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwJavNLkU2jE_rlCbXECkK-iH1FTTceacmShKdGA20oU12YT-wPy4Eo3y-aZXQl5x-d/exec";
+
+        const server = {
+            run: async (functionName, ...args) => {
+                if(GAS_API_URL === "https://script.google.com/macros/s/AKfycbwJavNLkU2jE_rlCbXECkK-iH1FTTceacmShKdGA20oU12YT-wPy4Eo3y-aZXQl5x-d/exec") {
+                    Swal.fire('Error Konfigurasi', 'Anda belum memasukkan URL Web App Google Apps Script di dalam kode index.html', 'error');
+                    throw new Error("Missing API URL");
+                }
+
+                showLoader();
+                try {
+                    let requestBody = {};
+                    
+                    // Memetakan fungsi lama ke struktur payload API yang baru
+                    if (functionName === 'login') {
+                        requestBody = { action: 'login', payload: { username: args[0], password: args[1] } };
+                    } else if (functionName === 'serverRequest') {
+                        requestBody = { 
+                            action: 'serverRequest', 
+                            payload: { action: args[0], sheetName: args[1], data: args[2] },
+                            username: args[3]
+                        };
+                    } else if (functionName === 'setupDatabase') {
+                        requestBody = { action: 'setupDatabase', payload: {} };
+                    }
+
+                    // Mengirim POST request ke GAS API
+                    const response = await fetch(GAS_API_URL, {
+                        method: 'POST',
+                        redirect: 'follow', // Penting untuk melewati pengalihan Google
+                        headers: {
+                            // Menggunakan text/plain untuk menghindari CORS Preflight (OPTIONS)
+                            'Content-Type': 'text/plain;charset=utf-8' 
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    if (!response.ok) throw new Error("Jaringan bermasalah atau URL API salah.");
+                    
+                    const result = await response.json();
+                    hideLoader();
+                    return result;
+                } catch (error) {
+                    hideLoader();
+                    console.error("API Error:", error);
+                    throw error;
+                }
+            }
+        };
+
+        // --- 2. GLOBAL STATE ---
+        let appState = {
+            user: null,
+            currentMenu: 'Borrowing',
+            currentData: [],
+            headers: [],
+            editId: null,
+            cameraTargetField: null,
+            cameraStream: null
+        };
+        const schema = {
+            Projects: { fields: ['Nama Project', {name:'No SO/PO', type:'text'}, 'Customer', {name:'Tanggal', type:'date'}, 'Link BOM/BOQ', 'Keterangan'] },
+            Spareparts: { fields: ['Nama Sparepart', 'Spesifikasi', {name:'Stok', type:'number'}, 'Lokasi Penyimpanan'] },
+            Tools: { fields: ['Nama Tool', {name:'Jumlah', type:'number'}, 'Kondisi', {name:'Status', type:'select', options:['Tersedia','Dipinjam','Rusak','Maintenance']}] },
+            Products: { fields: [{name:'No SO/PO', type:'text'}, 'Nama Produk', 'Customer', {name:'Tanggal', type:'date'}, 'Link Video Test', 'Status Project', 'Keterangan'] },
+            Borrowing: { fields: ['Nama Tool', 'Nama Peminjam', 'Departemen', {name:'Foto Peminjam', type:'camera'}, {name:'Tanggal Pinjam', type:'date'}, {name:'Status', type:'select', options:['Dipinjam','Dikembalikan']}, {name:'Foto Kembali', type:'camera'}] },
+            Users: { fields: ['Nama', 'Username', {name:'Password', type:'password'}, {name:'Role', type:'select', options:['Admin','User']}, {name:'Status', type:'select', options:['Aktif','Nonaktif']}] },
+            'Activity Log': { readonly: true }
+        };
+        const userAccessibleMenus = ['Borrowing'];
+
+        // --- 3. CORE UI FUNCTIONS ---
+        function showLoader() { document.getElementById('loader').classList.remove('hidden'); }
+        function hideLoader() { document.getElementById('loader').classList.add('hidden'); }
+        function toast(title, icon='success') { Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, icon: icon, title: title }); }
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            document.getElementById('themeIcon').className = document.documentElement.classList.contains('dark') ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.toggle('hidden');
+        }
+
+        // --- 4. AUTHENTICATION ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value;
+            
+            if (!u || !p) return Swal.fire('Error', 'Username dan password harus diisi!', 'error');
+            
+            try {
+                const res = await server.run('login', u, p);
+                if(res && res.success) {
+                    appState.user = res.user;
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('mainApp').classList.remove('hidden');
+                    
+                    document.getElementById('userAvatar').innerText = appState.user.nama ? appState.user.nama.charAt(0).toUpperCase() : 'U';
+                    document.getElementById('userNameDisplay').innerText = appState.user.nama || 'User';
+                    document.getElementById('userRoleDisplay').innerText = appState.user.role || 'User';
+                    
+                    updateMenuVisibility();
+                    
+                    if (appState.user.role !== 'Admin') {
+                        toast('Selamat Datang, ' + (appState.user.nama || appState.user.username));
+                        navigate('Borrowing');
+                    } else {
+                        toast('Selamat Datang, ' + (appState.user.nama || appState.user.username));
+                        navigate('Dashboard');
+                    }
+                } else {
+                    Swal.fire('Error', (res && res.message) || 'Login gagal!', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Terjadi kesalahan saat menghubungi server.', 'error');
+            }
+        }
+        function handleLogout() {
+            appState.user = null;
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        // --- 5. MENU VISIBILITY ---
+        function updateMenuVisibility() {
+            const isAdmin = appState.user && appState.user.role === 'Admin';
+            const adminEls = ['adminDashboardMenu', 'adminMenuSection', 'adminProductsMenu', 'adminMenuSystem'];
+            adminEls.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.style.display = isAdmin ? 'block' : 'none';
+                    if(id === 'adminMenuSystem') isAdmin ? el.classList.remove('hidden') : el.classList.add('hidden');
+                }
+            });
+            if(!isAdmin) document.getElementById('view-Dashboard').classList.add('hidden');
+        }
+
+        // --- 6. NAVIGATION & RENDER ---
+        async function navigate(menu) {
+            if (appState.user && appState.user.role !== 'Admin' && !userAccessibleMenus.includes(menu)) {
+                return Swal.fire('Akses Ditolak', 'Anda hanya bisa mengakses menu Peminjaman.', 'warning');
+            }
+            
+            appState.currentMenu = menu;
+            document.getElementById('pageTitle').innerText = menu;
+            
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.className = el.className.replace('bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400', 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200');
+                if(el.dataset.menu === menu) el.className = el.className.replace('hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200', 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium');
+            });
+            
+            if(window.innerWidth < 768) toggleSidebar();
+            
+            if(menu === 'Dashboard') {
+                document.getElementById('view-Dashboard').classList.remove('hidden');
+                document.getElementById('view-CRUD').classList.add('hidden');
+                loadDashboard();
+            } else {
+                document.getElementById('view-Dashboard').classList.add('hidden');
+                document.getElementById('view-CRUD').classList.remove('hidden');
+                document.getElementById('searchInput').value = '';
+                
+                const btnAdd = document.getElementById('btnAddData');
+                (schema[menu] && schema[menu].readonly) ? btnAdd.classList.add('hidden') : btnAdd.classList.remove('hidden');
+                
+                await loadTableData(menu);
+            }
+        }
+
+        // --- 7. DASHBOARD LOGIC ---
+        async function loadDashboard() {
+            try {
+                const projects = await server.run('serverRequest', 'read', 'Projects', appState.user.username);
+                const tools = await server.run('serverRequest', 'read', 'Tools', appState.user.username);
+                const products = await server.run('serverRequest', 'read', 'Products', appState.user.username);
+                
+                document.getElementById('stat-projects').innerText = projects.length || 0;
+                document.getElementById('stat-products').innerText = products.length || 0;
+                document.getElementById('stat-borrowed').innerText = (tools || []).filter(t => t.Status === 'Dipinjam').length;
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // --- 8. CRUD LOGIC ---
+        async function loadTableData(sheetName) {
+            try {
+                const data = await server.run('serverRequest', 'read', sheetName, appState.user.username);
+                appState.currentData = data || [];
+                
+                if(data && data.length > 0) {
+                    appState.headers = Object.keys(data[0]).filter(h => h !== 'ID' && h !== 'Password');
+                } else if (schema[sheetName]) {
+                    appState.headers = ['No', ...schema[sheetName].fields.map(f => typeof f === 'string' ? f : f.name)];
+                } else appState.headers = [];
+                
+                renderTable();
+            } catch (error) {
+                toast('Gagal memuat data.', 'error');
+            }
+        }
+
+        function renderTable() {
+            const head = document.getElementById('tableHead');
+            const body = document.getElementById('tableBody');
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = appState.currentData || [];
+            if(query) filtered = filtered.filter(row => Object.values(row).some(val => String(val).toLowerCase().includes(query)));
+            
+            if(!appState.headers || appState.headers.length === 0) {
+                head.innerHTML = '';
+                body.innerHTML = `<tr><td class="text-center py-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`;
+                document.getElementById('tableInfo').innerText = 'Menampilkan 0 data';
+                return;
+            }
+            
+            const isReadonly = schema[appState.currentMenu] && schema[appState.currentMenu].readonly;
+            head.innerHTML = appState.headers.map(h => `<th class="py-3 px-4">${h}</th>`).join('') + (isReadonly ? '' : `<th class="py-3 px-4 text-center">Aksi</th>`);
+            
+            if(filtered.length === 0) {
+                body.innerHTML = `<tr><td colspan="${appState.headers.length + 1}" class="text-center py-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`;
+                document.getElementById('tableInfo').innerText = 'Menampilkan 0 data';
+                return;
+            }
+            
+            body.innerHTML = filtered.map(row => {
+                let html = `<tr>`;
+                appState.headers.forEach(h => {
+                    let val = row[h];
+                    if(val && typeof val === 'string' && val.startsWith('data:image')) val = `<img src="${val}" class="h-10 w-10 object-cover rounded shadow-sm hover:scale-150 transition transform origin-left">`;
+                    else if (val && typeof val === 'string' && val.startsWith('http')) val = `<a href="${val}" target="_blank" class="text-blue-500 hover:underline">Link <i class="fas fa-external-link-alt text-xs"></i></a>`;
+                    else if (h === 'Status' || h === 'Status Project') {
+                        let color = val === 'Tersedia' || val === 'Selesai' ? 'bg-green-100 text-green-700' : val === 'Dipinjam' || val === 'Proses' ? 'bg-orange-100 text-orange-700' : val === 'Nonaktif' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700';
+                        val = `<span class="px-2 py-1 rounded-full text-xs font-bold ${color}">${val || '-'}</span>`;
+                    } else if (h === 'Role') {
+                        let color = val === 'Admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700';
+                        val = `<span class="px-2 py-1 rounded-full text-xs font-bold ${color}">${val || '-'}</span>`;
+                    }
+                    html += `<td class="py-3 px-4 align-middle">${val !== undefined && val !== null ? val : '-'}</td>`;
+                });
+                
+                if(!isReadonly) {
+                    html += `<td class="py-3 px-4 text-center">
+                        <button onclick="openModal('edit', '${row.ID}')" class="text-blue-500 hover:text-blue-700 mx-1"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteData('${row.ID}')" class="text-red-500 hover:text-red-700 mx-1"><i class="fas fa-trash"></i></button>
+                    </td>`;
+                }
+                html += `</tr>`;
+                return html;
+            }).join('');
+            
+            document.getElementById('tableInfo').innerText = 'Menampilkan ' + filtered.length + ' data';
+        }
+        function filterTable() { renderTable(); }
+
+        // --- 9. MODAL & FORM BUILDER ---
+        function openModal(mode, id = null) {
+            appState.editId = id;
+            const menu = appState.currentMenu;
+            const formObj = schema[menu];
+            document.getElementById('modalTitle').innerText = mode === 'add' ? 'Tambah Data ' + menu : 'Edit Data ' + menu;
+            
+            let rowData = mode === 'edit' && id ? (appState.currentData.find(x => x.ID === id) || {}) : {};
+            const form = document.getElementById('crudForm');
+            form.innerHTML = '';
+            
+            formObj.fields.forEach(f => {
+                const name = typeof f === 'string' ? f : f.name;
+                const type = typeof f === 'string' ? 'text' : (f.type || 'text');
+                const options = f.options || [];
+                let val = rowData[name] !== undefined ? rowData[name] : '';
+                
+                if (type === 'date' && val) {
+                    try {
+                        const parts = val.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                        if (parts) val = `${parts[3]}-${parts[2]}-${parts[1]}`;
+                    } catch(e) {}
+                }
+                
+                let inputHtml = '';
+                const baseClass = "w-full px-3 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 outline-none mt-1 text-sm";
+                
+                if (type === 'select') {
+                    inputHtml = `<select id="field_${name}" class="${baseClass}" required><option value="">Pilih...</option>${options.map(o => `<option value="${o}" ${val===o?'selected':''}>${o}</option>`).join('')}</select>`;
+                } 
+                else if (type === 'camera') {
+                    inputHtml = `<div class="flex gap-2 items-center mt-1">
+                        <input type="hidden" id="field_${name}" value="${val}">
+                        <img id="preview_${name}" src="${val || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}" class="w-16 h-16 object-cover border rounded ${val?'':'hidden'}">
+                        <button type="button" onclick="openCamera('${name}')" class="bg-gray-200 dark:bg-gray-600 px-3 py-2 rounded-lg text-sm hover:bg-gray-300 transition"><i class="fas fa-camera"></i> Foto</button>
+                        ${val ? `<button type="button" onclick="clearPhoto('${name}')" class="text-red-500 text-xs"><i class="fas fa-times"></i></button>`:''}
+                    </div>`;
+                }
+                else if (type === 'password') inputHtml = `<input type="password" id="field_${name}" class="${baseClass}" ${mode==='add'?'required':''} placeholder="${mode==='edit'?'Isi jika ingin ganti password':''}">`;
+                else if (type === 'date') inputHtml = `<input type="date" id="field_${name}" class="${baseClass}" value="${val}" ${mode==='add'?'required':''}>`;
+                else inputHtml = `<input type="${type}" id="field_${name}" class="${baseClass}" value="${val}" ${mode==='add'?'required':''}>`;
+                
+                if (menu === 'Borrowing' && name === 'Nama Tool') inputHtml = `<select id="field_${name}" class="${baseClass}" required><option value="">Pilih Tool...</option></select>`;
+                
+                form.innerHTML += `<div class="col-span-1"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">${name}</label>${inputHtml}</div>`;
+            });
+
+            if(menu === 'Borrowing') {
+                server.run('serverRequest', 'read', 'Tools', appState.user.username).then(tools => {
+                    const select = document.getElementById('field_Nama Tool');
+                    if(select && tools) {
+                        select.innerHTML = '<option value="">Pilih Tool...</option>';
+                        tools.forEach(t => {
+                            if(t.Status === 'Tersedia' || t['Nama Tool'] === rowData['Nama Tool']) {
+                                select.innerHTML += `<option value="${t['Nama Tool']}" ${rowData['Nama Tool']===t['Nama Tool']?'selected':''}>${t['Nama Tool']} (Stok: ${t.Jumlah})</option>`;
+                            }
+                        });
+                    }
+                });
+            }
+            document.getElementById('crudModal').classList.remove('hidden');
+        }
+        function closeModal() { document.getElementById('crudModal').classList.add('hidden'); }
+
+        async function saveData(e) {
+            e.preventDefault();
+            const menu = appState.currentMenu;
+            let payload = {};
+            
+            schema[menu].fields.forEach(f => {
+                const name = typeof f === 'string' ? f : f.name;
+                const el = document.getElementById('field_'+name);
+                if (el) {
+                    let value = el.value;
+                    if (name.includes('Tanggal') && value) {
+                        const parts = value.split('-');
+                        if (parts.length === 3) value = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                    }
+                    payload[name] = value;
+                }
+            });
+            
+            const action = appState.editId ? 'update' : 'create';
+            if (appState.editId) payload.ID = appState.editId;
+            
+            try {
+                const res = await server.run('serverRequest', action, menu, payload, appState.user.username);
+                if(res && res.success) {
+                    toast(res.message);
+                    closeModal();
+                    await loadTableData(menu);
+                } else Swal.fire('Error', (res && res.message) || 'Gagal menyimpan data!', 'error');
+            } catch (error) { Swal.fire('Error', 'Koneksi ke server gagal.', 'error'); }
+        }
+
+        async function deleteData(id) {
+            const result = await Swal.fire({ title: 'Hapus Data?', text: "Data yang dihapus tidak bisa dikembalikan!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus!'});
+            if (result.isConfirmed) {
+                try {
+                    const res = await server.run('serverRequest', 'delete', appState.currentMenu, {ID: id}, appState.user.username);
+                    if(res && res.success) {
+                        toast('Data dihapus!');
+                        await loadTableData(appState.currentMenu);
+                    } else Swal.fire('Error', (res && res.message) || 'Gagal menghapus data!', 'error');
+                } catch (error) { Swal.fire('Error', 'Koneksi ke server gagal.', 'error'); }
+            }
+        }
+
+        // --- 10. CAMERA LOGIC ---
+        async function openCamera(fieldName) {
+            appState.cameraTargetField = fieldName;
+            document.getElementById('cameraModal').classList.remove('hidden');
+            const video = document.getElementById('cameraVideo');
+            try {
+                appState.cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                video.srcObject = appState.cameraStream;
+            } catch (err) {
+                closeCamera();
+                Swal.fire('Error', 'Tidak dapat mengakses kamera.', 'error');
+            }
+        }
+        function closeCamera() {
+            document.getElementById('cameraModal').classList.add('hidden');
+            if(appState.cameraStream) appState.cameraStream.getTracks().forEach(track => track.stop());
+            document.getElementById('cameraVideo').srcObject = null;
+        }
+        function capturePhoto() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.getElementById('cameraCanvas');
+            canvas.width = 400; canvas.height = (video.videoHeight / video.videoWidth) * 400;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            const base64Img = canvas.toDataURL('image/jpeg', 0.7);
+            
+            if (appState.cameraTargetField) {
+                document.getElementById('field_'+appState.cameraTargetField).value = base64Img;
+                document.getElementById('preview_'+appState.cameraTargetField).src = base64Img;
+                document.getElementById('preview_'+appState.cameraTargetField).classList.remove('hidden');
+            }
+            closeCamera();
+        }
+        function clearPhoto(fieldName) {
+            document.getElementById('field_'+fieldName).value = '';
+            document.getElementById('preview_'+fieldName).src = '';
+            document.getElementById('preview_'+fieldName).classList.add('hidden');
+        }
+
+        // --- 11. EXPORT & SYSTEM ---
+        function exportTableToCSV() {
+            if(!appState.currentData || appState.currentData.length === 0) return toast('Tidak ada data', 'warning');
+            const csv = appState.headers.join(',') + '\n' + appState.currentData.map(row => appState.headers.map(h => `"${(row[h]||'').toString().replace(/"/g, '""')}"`).join(',')).join('\n');
+            const a = document.createElement('a');
+            a.href = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            a.download = `Export_${appState.currentMenu}.csv`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+        
+        async function runSetup() {
+            try {
+                const res = await server.run('setupDatabase');
+                Swal.fire('Database Setup', (res && res.message) || 'Berhasil!', 'success');
+            } catch (error) { Swal.fire('Error', 'Koneksi ke server gagal', 'error'); }
+        }
+    </script>
+</body>
+</html>
